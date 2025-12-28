@@ -66,7 +66,7 @@
     color: black;
     font-weight: bold;
     font-size: 18px;
-    padding: 12px 24px;
+    padding: calc(12px + env(safe-area-inset-top, 20px)) 24px 12px 24px; /* top padding increased */
     text-align: left;
     border-bottom: 1px solid #e0e0e0;
     flex-shrink: 0;
