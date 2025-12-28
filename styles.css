@@ -1,10 +1,10 @@
   html, body {
     margin: 0;
     padding: 0;
-    height: 100vh;       /* Use viewport height */
+    height: 100svh;       /* Use viewport height */
     width: 100vw;        /* Use viewport width */
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #f7f7f8;
+    background: white;
     display: flex;
     overflow: hidden;
 }
