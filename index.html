@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FEARGPT - ArtiFeargial InKelligence</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="sidebar">
+  <button id="sidebarClose">&times;</button>
+  <button onclick="triggerBucket('bio')">Bio</button>
+  <button onclick="triggerBucket('contact')">Contact</button>
+  <button onclick="triggerBucket('shows')">Follow Me on Socials</button>
+  <button onclick="triggerBucket('press')">Press Quotes</button>
+</div>
+
+  <div id="chat-wrapper">
+    <div id="chat-header">
+      <div id="header-left">
+        <button id="sidebarToggle">&#9776;</button>
+        <span id="logo">FEARGPT</span>
+      </div>
+    </div>
+    <div id="chat-container">
+      <div id="messages"></div>
+    </div>
+
+    <div id="input-area">
+      <div id="userInput" contenteditable="true" placeholder="Type your question..."></div>
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+<script>
+let awaitingHMRCAnswer = false;
+let romanceTriggered = false;
+let messageCount = 0;
+
+const responses = [
+  {id:"bio", triggers:["who is fearghas","who's fearghas","who are you","tell me about fearghas","bio","biography","about fearghas", "who", "comedy"], reply:`Fearghas Kelly is a stand-up comedian from Glasgow. Twice shortlisted for the BBC New Comedy Award and a Semi-Finalist in the prestigious So You Think You're Funny? competition in 2022, his climb up the comedy ladder has seen him perform in world-famous cities such as London, Berlin and Dunfermline.<br><br>In 2023, Fearghas took his sold-out Glasgow International Comedy Festival show, 'Tip of the Ice-Fearg' to the Edinburgh Festival Fringe, and later to the Reykjavik Fringe Festival in 2024. A multimedia mix of stand-up and sketches, the show received a number of positive audience reviews calling it "a real joy," "proper Scottish comedy" and "hilarious and ever so slightly weird." <br><br>Fearghas hosted The Stand Comedy Club’s monthly multimedia show, ‘Screen Time’, taking it to the Edinburgh Festival Fringe in 2024. He also performed his second solo show at the Festival, ‘Whooooooo!’, at the iconic venue, demonstrating his “odd and ingenious comic mind” (Chortle).<br><br>Fearghas is “absolutely hilarious…comedy gold” (The Poke), “slick…a knack for reacting to the news cycle” (The Scotsman) and “deservedly viral” (The Independent). He has also written for BBC Radio Scotland's 'Noising Up'.`},
+  {id:"contact", triggers:["contact","email","how can i contact","how do i contact","email address","reach fearghas","booking","agent"], reply:`For bookings, please email <a href="mailto:fearghaskellycomedy@gmail.com">fearghaskellycomedy@gmail.com</a>. For everything else, find me on <a href="https://www.facebook.com/FearghasKellyComedy/" target="_blank">Facebook</a>, <a href="https://www.instagram.com/fearghaskelly/" target="_blank">Instagram</a>, <a href="https://twitter.com/fearghaskelly" target="_blank">Twitter</a>, or <a href="http://threads.com/fearghaskelly" target="_blank">Threads</a>.`},
+  {id:"shows", triggers:["shows","gigs","tour","live","performing","upcoming","socials","follow me","follow"], reply:`Please follow me on the socials for all upcoming gigs: <a href="https://www.facebook.com/FearghasKellyComedy/" target="_blank">Facebook</a>, <a href="https://www.instagram.com/fearghaskelly/" target="_blank">Instagram</a>, <a href="https://twitter.com/fearghaskelly" target="_blank">Twitter</a>, or <a href="http://threads.com/fearghaskelly" target="_blank">Threads</a>.`},
+  {id:"press", triggers:["press","review","reviews","quote","quotes","poster","what people say","critics","articles","interview","interviews","media","coverage"], reply:`"An odd and ingenious comic mind" – Chortle<br><br>"Absolutely hilarious…comedy gold" – The Poke<br><br>"Slick…A knack for reacting to the news cycle" – The Scotsman<br><br>"Deservedly viral" – The Independent`},
+  {id:"lesKeithPic", triggers:["les dennis","Keith Chegwin"], reply:`<a href="https://www.gettyimages.co.uk/detail/news-photo/keith-chegwin-and-les-dennis-at-the-ivy-club-on-august-10-news-photo/588299022" target="_blank">Here's my favourite picture of Les Dennis & Keith Chegwin</a>`},
+  {id:"personal", triggers:["age","how old","birthday","personal","relationship","girlfriend","boyfriend","married"], reply:"Before I answer that, I need to ask: are you from HMRC?"},
+  {id:"romance", triggers:["girlfriend","boyfriend","wife","husband","dating","relationship","partner","love"], reply:"I'm married to the game."},
+  {id:"greetings", triggers:["hello","hi","hey","hiya","sup"], reply:"Hello! You can ask me about my comedy stuff, upcoming gigs, or how to contact me. Or click one of the options on the sidebar!"},
+  {id:"ask", triggers:["ask"], reply:"You can ask me about my comedy stuff, upcoming gigs, or how to contact me. Or click one of the options on the sidebar!"},
+  {id:"whatIsThis", triggers:["what is this","what are you","who made you","is this real","what is this site", "ai", "is this ai"], reply:"This is FEARGPT, a chatbot that answers questions about Fearghas Kelly. AI is really good, actually, and ISN'T destroying our brain power, water supply or democracy, so ask me something!"},
+  {id:"thanks", triggers:["thanks","thank you","cheers"], reply:"Oh no, thank YOU!!!"},
+  {id:"test", triggers:["test","testing"], reply:"I've done quite a bit of that making this thing, don't you worry."},
+  {id:"goodbye", triggers:["bye","goodbye","see you","later"], reply:"Catch ye."},
+  {id:"piss", triggers:["piss"], reply:"No thanks, I'm full."},
+  {id:"Seinfeld", triggers:["seinfeld", "seinfeldd"], reply:"What is the deal with that?"},
+  {id:"song", triggers:["song","play","music"], reply:`<a href="https://youtu.be/dDYE5eu9POA?si=Iur4ggxxRn0Xyr7O" target="_blank">Oh you want a song, do you?</a>`},
+  {id:"drinks", triggers:["cocktail","drink","drnikipoo","drinkypoo"], reply:`<a href="https://youtu.be/BdwPmIqZUpI?si=NN3dPJ2H-soxfJIL" target="_blank">If you want a cocktail, I've got you covered.</a>`},
+  {id:"isAI", triggers:["is this real ai","is this ai","real ai","artificial intelligence","are you ai","is this ai"], reply:"No, every response is pre-written, meaning that this isn't destroying our brain capacity, water supply or democracy."},
+  {id:"unknown", triggers:[], reply:"I've no idea what you're on about. You can ask me about my comedy career, upcoming gigs and how to contact me if you like."}
+];
+
+function getReply(input) {
+  input = input.toLowerCase();
+
+  if(awaitingHMRCAnswer) {
+    awaitingHMRCAnswer = false;
+    if(input.includes("yes")) return "Error HMRC-401B: Personal data access denied. Please resubmit Form 69-FEARG within 6–7 working lives.";
+    else return "Still weird.";
+  }
+
+  if(romanceTriggered) {
+    romanceTriggered = false;
+    if(input.includes("triple h")) return "I couldn't do that to Stephanie. Just had a thought though, do you think Triple H wasted more bottles of water than AI?";
+  }
+
+  for(let item of responses) {
+    for(let trigger of item.triggers) {
+      if(input.includes(trigger)) {
+        if(item.id==="personal") awaitingHMRCAnswer = true;
+        if(item.id==="romance") romanceTriggered = true;
+        return item.reply;
+      }
+    }
+  }
+
+  return responses.find(r=>r.id==="unknown").reply;
+}
+
+function sendMessage() {
+  const inputDiv = document.getElementById("userInput");
+  const text = inputDiv.innerText.trim();
+  if(!text) return;
+  inputDiv.innerText = "";
+  addMessage("You: " + text, "user");
+
+  messageCount++;
+  if(messageCount===10) addMessage("You've been here a wee while, are you sure you're okay?", "bot");
+
+  const reply = getReply(text);
+  addMessage(reply, "bot");
+}
+
+function addMessage(text,className){
+  const msg = document.createElement("div");
+  msg.className = "message " + className;
+  msg.innerHTML = text;
+
+  const messagesDiv = document.getElementById("messages");
+  messagesDiv.appendChild(msg);
+
+  // scroll the chat container to bottom after message renders
+  const container = document.getElementById("chat-container");
+  requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+          container.scrollTop = container.scrollHeight;
+      });
+  });
+
+  return msg;
+}
+
+function triggerBucket(bucketId){
+  const bucket = responses.find(r=>r.id===bucketId);
+  if(!bucket) return;
+  addMessage(bucket.reply,"bot");
+}
+
+document.getElementById("sendBtn").addEventListener("click", sendMessage);
+document.getElementById("userInput").addEventListener("keypress", e=>{
+    if(e.key==="Enter"){ e.preventDefault(); sendMessage(); }
+});
+
+// Sidebar toggle
+const sidebarToggle = document.getElementById("sidebarToggle");
+const sidebar = document.getElementById("sidebar");
+
+sidebarToggle.addEventListener("click", ()=>{
+  sidebar.classList.toggle("open"); // click once → open, click again → close
+sidebarClose.addEventListener("click", () => {
+  sidebar.classList.remove("open"); // closes the sidebar
+});
+});
+
+// Make sidebar slide away when any main button inside it is clicked
+const sidebarButtons = document.querySelectorAll("#sidebar button:not(#sidebarClose)");
+
+sidebarButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        sidebar.classList.remove("open"); // closes the sidebar
+    });
+});
+
+
+</script>
+
+</body>
+</html>
