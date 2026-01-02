@@ -24,8 +24,15 @@
       </div>
     </div>
     <div id="chat-container">
-      <div id="messages"></div>
-    </div>
+  <div id="empty-state">
+    <h1>AI – It's "Good" now.</h1>
+    <p>
+      Ask me about Fearghas Kelly’s comedy, upcoming gigs, or how to contact him (or use the sidebar to get what you want).
+    </p>
+  </div>
+
+  <div id="messages"></div>
+</div>
 
     <div id="input-area">
       <div id="userInput" contenteditable="true" placeholder="Type your question..."></div>
@@ -74,6 +81,19 @@ function getReply(input) {
     romanceTriggered = false;
     if(input.includes("triple h")) return "I couldn't do that to Stephanie. Just had a thought though, do you think Triple H wasted more bottles of water than AI?";
   }
+if (
+  input.includes("image") ||
+  input.includes("picture") ||
+  input.includes("photo") ||
+  input.includes("generate")
+) {
+  return `
+    I've generated an NFT of Fearghas for you. Remember this NFT belongs to you and cannot be copy-and-pasted by anyone else.<br><br>
+    <img src="fearghas-stand-portrait.jpg" 
+         alt="Fearghas Kelly"
+         style="max-width:100%; border-radius:12px; margin-top:12px;">
+  `;
+}
 
   for(let item of responses) {
     for(let trigger of item.triggers) {
